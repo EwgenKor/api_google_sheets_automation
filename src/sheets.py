@@ -15,77 +15,77 @@ def get_sheets_service():
 
     credentials_file = os.getenv("GOOGLE_CREDENTIALS_FILE")
 
+    if not credentials_file:
+        raise ValueError(
+            "GOOGLE_CREDENTIALS_FILE is not set"
+        )
+
     credentials = Credentials.from_service_account_file(
         credentials_file,
         scopes=SCOPES,
     )
 
-    return build(
+    service = build(
         "sheets",
         "v4",
         credentials=credentials,
     )
 
+    return service
 
-def read_sheet():
+
+def get_spreadsheet_id():
     load_dotenv()
 
     spreadsheet_id = os.getenv("SPREADSHEET_ID")
+
+    if not spreadsheet_id:
+        raise ValueError(
+            "SPREADSHEET_ID is not set"
+        )
+
+    return spreadsheet_id
+
+
+def read_products():
+
     service = get_sheets_service()
+    spreadsheet_id = get_spreadsheet_id()
 
     result = (
         service.spreadsheets()
         .values()
         .get(
             spreadsheetId=spreadsheet_id,
-            range="Products!A1:B10",
+            range="Products!A2:E",
         )
         .execute()
     )
 
-    return result.get("values", [])
+    rows = result.get("values", [])
 
-def write_sheet():
-    load_dotenv()
+    return rows
 
-    spreadsheet_id = os.getenv("SPREADSHEET_ID")
+
+def write_results(results: list[list]):
+
     service = get_sheets_service()
-
-    values = [
-        ["last_updated", "status"],
-        ["2026-08-12", "Google Sheets API works"],
-    ]
+    spreadsheet_id = get_spreadsheet_id()
 
     body = {
-        "values": values,
+        "values": results,
     }
 
-    result = (
+    response = (
         service.spreadsheets()
         .values()
         .update(
             spreadsheetId=spreadsheet_id,
-            range="Products!D1:E2",
+            range="Products!F2:I",
             valueInputOption="USER_ENTERED",
             body=body,
         )
         .execute()
     )
 
-    return result
-
-
-if __name__ == "__main__":
-    rows = read_sheet()
-
-    print("Current sheet data:")
-    for row in rows:
-        print(row)
-
-    result = write_sheet()
-
-    print()
-    print(
-        f"Updated cells: "
-        f"{result.get('updatedCells', 0)}"
-    )
+    return response
