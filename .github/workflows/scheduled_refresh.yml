@@ -1,0 +1,34 @@
+name: Scheduled Google Sheets Refresh
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Create Google credentials file
+        run: |
+          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > service-account.json
+
+      - name: Run automation
+        env:
+          GOOGLE_CREDENTIALS_FILE: service-account.json
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+        run: uv run python -m src.main
