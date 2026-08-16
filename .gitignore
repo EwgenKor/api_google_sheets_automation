@@ -1,12 +1,19 @@
+# Environment
+.env
 .venv/
+
+# Google credentials
+credentials.json
+service-account*.json
+*.credentials.json
+
+# Python
 __pycache__/
 *.py[cod]
 
-.env
-credentials.json
-service-account*.json
-*.key.json
-
+# macOS
 .DS_Store
+
+# IDE
 .idea/
 .vscode/
